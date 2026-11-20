@@ -20,51 +20,75 @@
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.6;
+      line-height: 1.65;
       padding: 36px 20px 64px;
     }
-    .wrap { max-width: 980px; margin: 0 auto; }
-    h1 { font-size: 1.9rem; font-weight: 600; margin: 0 0 8px; }
-    h2 { font-size: 1.25rem; font-weight: 600; margin: 34px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-    p { color: #d2d6dc; margin: 0 0 14px; }
-    .subtitle { color: var(--muted); font-size: 1rem; margin-bottom: 26px; }
-    .grid-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 14px;
-      margin: 18px 0 28px;
+    .wrap { max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 1.95rem; font-weight: 600; margin: 0 0 8px; }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 38px 0 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
     }
-    .stat-card {
+    p { color: #d2d6dc; margin: 0 0 14px; }
+    .subtitle { color: var(--muted); font-size: 1.02rem; margin-bottom: 24px; }
+    .cta-btn {
+      display: inline-block;
+      margin-top: 8px;
+      background: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+    .cta-btn:hover { background: #1d4ed8; }
+    .figure-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 18px;
+      margin: 18px 0 24px;
     }
-    .stat-label { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-    .stat-val { font-size: 1.45rem; font-weight: 600; color: var(--accent); margin-top: 4px; }
-    .stat-sub { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
-    table {
+    .figure-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+    @media (max-width: 720px) {
+      .figure-grid { grid-template-columns: 1fr; }
+    }
+    .fig-caption {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+    canvas {
       width: 100%;
-      border-collapse: collapse;
-      margin: 14px 0 22px;
-      font-size: 0.92rem;
-      background: var(--card);
-      border-radius: 10px;
-      overflow: hidden;
+      max-width: 340px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
     }
-    th, td {
-      padding: 10px 12px;
-      text-align: right;
-      border-bottom: 1px solid var(--border);
+    .canvas-title {
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
     }
-    th:first-child, td:first-child { text-align: left; }
-    th { color: var(--muted); font-weight: 500; background: #15181e; }
-    tr:last-child td { border-bottom: none; }
     .ring-panel {
       background: var(--midgrey);
       border-radius: 14px;
       padding: 24px;
-      margin: 20px 0 28px;
+      margin: 20px 0 10px;
       text-align: center;
     }
     .ring-title { color: #ffffff; font-size: 1rem; margin-bottom: 10px; font-weight: 500; }
@@ -114,90 +138,148 @@
   <div class="wrap">
     <h1>Information-Theoretic Circular Face Space</h1>
     <p class="subtitle">
-      Selecting unedited celebrity faces at CDF-equalised perceptual steps using a frequency-space neural filter bank and L2-regularised multinomial logistic regression.
-      &nbsp;<a href="task.html" style="color: var(--accent); text-decoration: none; font-weight: 500;">Launch 2AFC Validation Task &rarr;</a>
+      Building a perceptually uniform ring of unedited, in-the-wild faces without exhaustive psychophysical calibration.
+    </p>
+    <a class="cta-btn" href="task.html">Launch 2AFC Validation Task &rarr;</a>
+
+    <h2>1. Can Information Theory Create Perceptually Uniform Steps?</h2>
+    <p>
+      Simple visual features like colour hue or line orientation naturally form a circle where equal physical steps feel roughly equal.
+      Real celebrity photographs, however, are unaligned, high-dimensional, and vary wildly in lighting and pose—so spacing them equally
+      normally requires thousands of human similarity judgments.
+    </p>
+    <p>
+      Applied to images, <strong>information theory</strong> treats the database as a probability distribution <code>p(&theta;)</code> around a
+      2D face circle. Common, typical faces sit in high-density regions (low <em>surprisal</em>, <code>-log<sub>2</sub> p(&theta;)</code>),
+      whereas distinctive faces sit in sparser regions (high surprisal). Under <strong>efficient coding</strong>, human visual discrimination
+      is finest where stimuli are most frequent—so sampling faces at equal steps of the <em>cumulative distribution</em> (CDF) stretches dense
+      regions and compresses sparse regions to produce <strong>perceptually uniform steps</strong>.
     </p>
 
-    <div class="grid-cards">
-      <div class="stat-card">
-        <div class="stat-label">Stimulus Database</div>
-        <div class="stat-val">1,440 faces</div>
-        <div class="stat-sub">126 identities (&ge; 5 exemplars) used for training</div>
+    <h2>2. Neurally-Inspired Filter Bank &amp; Horizontal "Bar Codes"</h2>
+    <p>
+      Rather than feeding raw pixels into a model, each face (<code>128&times;128</code>, RMS-contrast normalised and windowed by a smooth
+      elliptical aperture across <code>1,440</code> images) is passed through a bank of bandpass filters in 2D Fourier frequency space.
+      Summing each filter's response gives a phase-invariant representation tolerant to small alignment shifts.
+    </p>
+    <p>
+      Because human face identification relies disproportionately on horizontal orientation structure—so-called
+      <strong>"biological bar codes"</strong> formed by the eyes, eyebrows, and mouth—we compared a <strong>complete</strong> filter bank
+      (16 orientations &times; 8 spatial frequencies = 128 filters) against an <strong>overcomplete, horizontally biased</strong> bank
+      that adds 4 extra low-frequency horizontal filters (<code>&plusmn;10&deg;</code> around <code>0&deg;</code>, <code>10&deg;</code> bandwidth).
+    </p>
+
+    <div class="figure-card">
+      <div class="figure-grid">
+        <div>
+          <div class="canvas-title">Base Complete Bank (16 ori &times; 8 SF = 128)</div>
+          <canvas id="canvas-base" width="320" height="320"></canvas>
+        </div>
+        <div>
+          <div class="canvas-title">Added Horizontal-Biased Filters (+2 &times; 2 at &plusmn;10&deg;)</div>
+          <canvas id="canvas-bias" width="320" height="320"></canvas>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">5-Fold CV Top-1</div>
-        <div class="stat-val">13.55%</div>
-        <div class="stat-sub">Chance = 0.79% (~17&times; above chance)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">5-Fold CV Top-5</div>
-        <div class="stat-val">27.71%</div>
-        <div class="stat-sub">Chance = 3.97%</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Circular Entropy</div>
-        <div class="stat-val">2.64 bits</div>
-        <div class="stat-sub">Von Mises KDE (&kappa; = 6) over 2D weight space</div>
+      <div class="fig-caption">
+        2D Fourier frequency-space representation (origin at DC; radial distance = spatial frequency, angle = orientation).
+        <strong>Left:</strong> Log-spaced frequency rings tiled across 16 orientations.
+        <strong>Right:</strong> Zoomed low-frequency view highlighting the 4 extra narrow-band filters at &plusmn;10&deg; around horizontal (0&deg;).
       </div>
     </div>
 
-    <h2>1. Image Preprocessing &amp; Filter Bank</h2>
+    <h2>3. Drawing Boundaries Between Identities</h2>
     <p>
-      Each of the 1,440 unedited images in <code>Men/</code> is resized to <code>128&times;128</code>, gamma-corrected (<code>&gamma; = 2</code>),
-      mean-subtracted, divided by its standard deviation (RMS contrast normalisation), and windowed with a smooth power-4 elliptical aperture
-      (<code>maskRx = 0.72</code>, <code>maskRy = 0.88</code>).
+      To map these filter responses onto facial identity rather than lighting or background noise, we used standard
+      <strong>generalised linear modelling techniques with L2 regularisation</strong> (multinomial logistic regression) across
+      <code>1,144</code> unedited exemplars spanning <code>126</code> identities (&ge; 5 photos each).
     </p>
     <p>
-      Each face is filtered in 2D Fourier space using a complete bank of <strong>16 orientations &times; 8 spatial frequencies</strong> (<code>128</code> filters, 4–32 cyc/img via <code>createBandPassFilters_customSizes</code>), summed globally per filter. A second overcomplete model adds <strong>2 &times; 2 = 4</strong> horizontal-biased low-SF filters (<code>&plusmn;10&deg;</code> around <code>0&deg;</code>, <code>10&deg;</code> bandwidth).
-    </p>
-
-    <h2>2. L2 Multinomial Logistic Regression: Base vs. Horizontal-Biased</h2>
-    <p>
-      Both models were evaluated on identical 5-fold stratified cross-validation splits (<code>N = 1,144</code> exemplars, <code>C = 126</code> identities, <code>&lambda; = 0.001</code>).
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>Model</th>
-          <th>Filters</th>
-          <th>Params</th>
-          <th>CV Top-1</th>
-          <th>CV Top-5</th>
-          <th>CV NLL (bits)</th>
-          <th>AIC</th>
-          <th>BIC</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Base (Complete)</strong></td>
-          <td>128</td>
-          <td>16,254</td>
-          <td>13.46%</td>
-          <td>27.88%</td>
-          <td>7.559</td>
-          <td>33,549</td>
-          <td>115,510</td>
-        </tr>
-        <tr>
-          <td><strong>Biased (+2&times;2 Horiz)</strong></td>
-          <td>132</td>
-          <td>16,758</td>
-          <td>13.55%</td>
-          <td>27.71%</td>
-          <td>7.647</td>
-          <td>34,529</td>
-          <td>119,030</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      While the 4 added low-SF horizontal filters carry substantial weight norms (<code>||W||<sub>2</sub></code> = 2.54–3.17), the complete <code>16&times;8</code> base bank already spans horizontal low frequencies—so adding 504 extra parameters slightly increases held-out cross-entropy (7.559 &rarr; 7.647 bits) and BIC.
+      Crucially, the model uses each image's filter responses to <strong>draw linear decision boundaries between identities</strong>.
+      Taking the top two axes of those learned identity boundaries collapses the filter bank into a 2D space structured by what
+      actually distinguishes one person from another.
     </p>
 
-    <h2>3. Circular Surprisal &amp; Equal-Step Face Ring</h2>
+    <h2>4. Identity Decoding Accuracy vs. Chance Baseline</h2>
     <p>
-      Projecting all 1,440 faces onto the top 2 singular vectors of the learned weight matrix <code>W</code> yields a 2D identity-predictive plane. Fitting a von Mises KDE yields circular surprisal <code>I(&theta;) = -log<sub>2</sub> p(&theta;)</code>, and inverting the empirical CDF selects 16 unique-identity original faces at equal perceptual steps starting at <code>0&deg;</code> (due east).
+      Across 5-fold cross-validation, both models decode held-out celebrity identities at roughly <strong>17&times; the Top-1 chance baseline</strong>
+      (<code>0.79%</code> for 126 identities) and <strong>7&times; the Top-5 chance baseline</strong> (<code>3.97%</code>).
+      Adding the 4 extra horizontal filters yields virtually identical accuracy (<code>13.55%</code> vs. <code>13.46%</code>) while adding
+      504 parameters, showing the complete 16&times;8 bank already captures the diagnostic horizontal structure.
+    </p>
+
+    <div class="figure-card">
+      <svg viewBox="0 0 820 300" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <!-- Left Panel: Top-1 -->
+        <text x="205" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-1 Identity Decoding (~17&times; Chance)</text>
+        <line x1="65" y1="240" x2="365" y2="240" stroke="#444b59" stroke-width="1.2"/>
+        <line x1="65" y1="45"  x2="65"  y2="240" stroke="#444b59" stroke-width="1.2"/>
+        <!-- Y ticks 0, 5, 10, 15, 20 -->
+        <text x="57" y="244" text-anchor="end" fill="#9aa0a6" font-size="11">0%</text>
+        <text x="57" y="195" text-anchor="end" fill="#9aa0a6" font-size="11">5%</text>
+        <text x="57" y="146" text-anchor="end" fill="#9aa0a6" font-size="11">10%</text>
+        <text x="57" y="98"  text-anchor="end" fill="#9aa0a6" font-size="11">15%</text>
+        <text x="57" y="49"  text-anchor="end" fill="#9aa0a6" font-size="11">20%</text>
+        <!-- Chance line 0.79% -> y = 240 - (0.79/20)*195 = 232.3 -->
+        <line x1="65" y1="232.3" x2="365" y2="232.3" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="362" y="226" text-anchor="end" fill="#ff9f9e" font-size="11">Chance baseline (0.79%)</text>
+        <!-- Bars: Base 13.46% (h=131.2, y=108.8), SD=1.86% (+/-18.1px) -->
+        <rect x="115" y="108.8" width="64" height="131.2" rx="4" fill="#5a9cf8"/>
+        <line x1="147" y1="90.7" x2="147" y2="126.9" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="139" y1="90.7" x2="155" y2="90.7" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="139" y1="126.9" x2="155" y2="126.9" stroke="#ffffff" stroke-width="1.8"/>
+        <!-- Fold dots Base: 13.00, 15.66, 14.80, 12.02, 11.23 -->
+        <circle cx="141" cy="113.3" r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="144" cy="87.3"  r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="147" cy="95.7"  r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="150" cy="122.8" r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="153" cy="130.5" r="3" fill="#ffffff" opacity="0.85"/>
+        <text x="147" y="81" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">13.5%</text>
+        <text x="147" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (128)</text>
+
+        <!-- Biased 13.55% (h=132.1, y=107.9), SD=2.20% (+/-21.5px) -->
+        <rect x="245" y="107.9" width="64" height="132.1" rx="4" fill="#8c7ae6"/>
+        <line x1="277" y1="86.4" x2="277" y2="129.4" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="269" y1="86.4" x2="285" y2="86.4" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="269" y1="129.4" x2="285" y2="129.4" stroke="#ffffff" stroke-width="1.8"/>
+        <!-- Fold dots Biased: 13.72, 16.06, 14.80, 11.06, 11.23 -->
+        <circle cx="271" cy="106.2" r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="274" cy="83.4"  r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="277" cy="95.7"  r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="280" cy="132.2" r="3" fill="#ffffff" opacity="0.85"/>
+        <circle cx="283" cy="130.5" r="3" fill="#ffffff" opacity="0.85"/>
+        <text x="277" y="76" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">13.5%</text>
+        <text x="277" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (132)</text>
+
+        <!-- Right Panel: Top-5 -->
+        <text x="615" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-5 Identity Decoding (~7&times; Chance)</text>
+        <line x1="475" y1="240" x2="775" y2="240" stroke="#444b59" stroke-width="1.2"/>
+        <line x1="475" y1="45"  x2="475" y2="240" stroke="#444b59" stroke-width="1.2"/>
+        <!-- Y ticks 0, 10, 20, 30, 35 -->
+        <text x="467" y="244" text-anchor="end" fill="#9aa0a6" font-size="11">0%</text>
+        <text x="467" y="188" text-anchor="end" fill="#9aa0a6" font-size="11">10%</text>
+        <text x="467" y="133" text-anchor="end" fill="#9aa0a6" font-size="11">20%</text>
+        <text x="467" y="77"  text-anchor="end" fill="#9aa0a6" font-size="11">30%</text>
+        <!-- Chance line 3.97% -> y = 240 - (3.97/35)*195 = 217.9 -->
+        <line x1="475" y1="217.9" x2="775" y2="217.9" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="772" y="211" text-anchor="end" fill="#ff9f9e" font-size="11">Chance baseline (3.97%)</text>
+        <!-- Base Top-5: 27.88% -> h = 155.3, y = 84.7 -->
+        <rect x="525" y="84.7" width="64" height="155.3" rx="4" fill="#5a9cf8"/>
+        <text x="557" y="77" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">27.9%</text>
+        <text x="557" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (128)</text>
+        <!-- Biased Top-5: 27.71% -> h = 154.4, y = 85.6 -->
+        <rect x="655" y="85.6" width="64" height="154.4" rx="4" fill="#8c7ae6"/>
+        <text x="687" y="78" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">27.7%</text>
+        <text x="687" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (132)</text>
+      </svg>
+      <div class="fig-caption">
+        5-fold cross-validated identity classification across 126 celebrities (&ge; 5 exemplars each). Error bars denote &plusmn;1 SD across folds; white dots show individual fold accuracies.
+      </div>
+    </div>
+
+    <h2>5. Resulting Equal-Step Circular Face Space</h2>
+    <p>
+      Projecting all 1,440 faces into the top two identity-boundary axes, fitting a circular von Mises density (<code>H = 2.64 bits</code>),
+      and sampling uniformly along the CDF selects 16 unedited faces spaced at equal information-theoretic steps starting at <code>0&deg;</code> (due east).
     </p>
 
     <div class="ring-panel">
@@ -206,63 +288,100 @@
         <div class="ring-circle"></div>
       </div>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Step</th>
-          <th>Equal-Step Angle</th>
-          <th>Actual Angle</th>
-          <th>Radius</th>
-          <th>Surprisal (bits)</th>
-        </tr>
-      </thead>
-      <tbody id="ring-table-body"></tbody>
-    </table>
   </div>
 
   <script>
-    const ringData = [
-      { step: 1,  eqDeg: 0.0,   actDeg: 359.99, radius: 1.2486, bits: 2.6387 },
-      { step: 2,  eqDeg: 22.5,  actDeg: 20.04,  radius: 0.7641, bits: 2.4947 },
-      { step: 3,  eqDeg: 45.0,  actDeg: 40.06,  radius: 0.9347, bits: 2.4262 },
-      { step: 4,  eqDeg: 67.5,  actDeg: 60.32,  radius: 0.8620, bits: 2.4566 },
-      { step: 5,  eqDeg: 90.0,  actDeg: 79.97,  radius: 1.1894, bits: 2.5698 },
-      { step: 6,  eqDeg: 112.5, actDeg: 102.44, radius: 0.8731, bits: 2.7497 },
-      { step: 7,  eqDeg: 135.0, actDeg: 128.51, radius: 1.0522, bits: 2.9186 },
-      { step: 8,  eqDeg: 157.5, actDeg: 155.32, radius: 0.8394, bits: 2.8812 },
-      { step: 9,  eqDeg: 180.0, actDeg: 179.99, radius: 0.7742, bits: 2.6318 },
-      { step: 10, eqDeg: 202.5, actDeg: 200.01, radius: 0.8311, bits: 2.4398 },
-      { step: 11, eqDeg: 225.0, actDeg: 219.02, radius: 1.2028, bits: 2.3836 },
-      { step: 12, eqDeg: 247.5, actDeg: 238.17, radius: 0.9709, bits: 2.4554 },
-      { step: 13, eqDeg: 270.0, actDeg: 259.24, radius: 0.7813, bits: 2.6139 },
-      { step: 14, eqDeg: 292.5, actDeg: 282.92, radius: 0.8466, bits: 2.8244 },
-      { step: 15, eqDeg: 315.0, actDeg: 310.54, radius: 0.8519, bits: 2.9296 },
-      { step: 16, eqDeg: 337.5, actDeg: 335.52, radius: 0.9772, bits: 2.8272 }
-    ];
+    // 1. Render 2D Fourier Filter Bank Canvases
+    function drawFilterBanks() {
+      const cBase = document.getElementById('canvas-base').getContext('2d');
+      const cBias = document.getElementById('canvas-bias').getContext('2d');
+      const W = 320, H = 320;
+      const imgBase = cBase.createImageData(W, H);
+      const imgBias = cBias.createImageData(W, H);
 
+      const nOris = 16, nFreqs = 8;
+      const oriBW = 180 / nOris;
+      const fKnots = [];
+      for (let i = 0; i <= nFreqs; i++) {
+        fKnots.push(4 * Math.pow(64 / 4, i / nFreqs));
+      }
+
+      for (let py = 0; py < H; py++) {
+        for (let px = 0; px < W; px++) {
+          const fx = (px - W / 2) * (128 / W);
+          const fy = (H / 2 - py) * (128 / H);
+          const rad = Math.hypot(fx, fy);
+          const ang = (Math.atan2(fy, fx) * 180) / Math.PI;
+          const inHalf = (ang >= -90 && ang < 90);
+
+          let vBase = 0;
+          if (inHalf && rad >= fKnots[0] && rad <= fKnots[nFreqs]) {
+            let sfIdx = 0;
+            for (let s = 0; s < nFreqs; s++) {
+              if (rad >= fKnots[s] && rad <= fKnots[s + 1]) { sfIdx = s; break; }
+            }
+            for (let oi = 0; oi < nOris; oi++) {
+              const oriC = -90 + oi * oriBW;
+              const dAng = ((ang - oriC + 90) % 180 + 180) % 180 - 90;
+              const w = 0.5 * (1 + Math.cos(Math.PI * Math.min(Math.abs(dAng) / oriBW, 1)));
+              const checker = ((oi + sfIdx) % 2 === 0) ? 1.0 : 0.48;
+              vBase = Math.max(vBase, w * checker);
+            }
+          }
+
+          const idx = (py * W + px) * 4;
+          imgBase.data[idx]     = Math.round(18 + 230 * Math.pow(vBase, 0.85));
+          imgBase.data[idx + 1] = Math.round(20 + 145 * Math.pow(vBase, 1.3));
+          imgBase.data[idx + 2] = Math.round(28 + 180 * (vBase * (1 - 0.5 * vBase)));
+          imgBase.data[idx + 3] = 255;
+
+          // Zoomed low-SF panel (+/- 48 cyc/img)
+          const fxZ = (px - W / 2) * (96 / W);
+          const fyZ = (H / 2 - py) * (96 / H);
+          const radZ = Math.hypot(fxZ, fyZ);
+          const angZ = (Math.atan2(fyZ, fxZ) * 180) / Math.PI;
+          const inHalfZ = (angZ >= -90 && angZ < 90);
+
+          let vBias = 0;
+          if (inHalfZ && radZ >= 1.5 && radZ <= 16) {
+            for (const oriC of [-10, 10]) {
+              const dAng = ((angZ - oriC + 90) % 180 + 180) % 180 - 90;
+              const wOri = 0.5 * (1 + Math.cos(Math.PI * Math.min(Math.abs(dAng) / 10, 1)));
+              const sfTone = (radZ < 7.5) ? 1.0 : 0.68;
+              vBias = Math.max(vBias, wOri * sfTone);
+            }
+          }
+          const ringHint = (radZ >= 4 && radZ <= 44 && inHalfZ) ? 35 : 18;
+          imgBias.data[idx]     = Math.round(ringHint + 90 * vBias);
+          imgBias.data[idx + 1] = Math.round(ringHint + 190 * vBias);
+          imgBias.data[idx + 2] = Math.round(ringHint + 220 * vBias);
+          imgBias.data[idx + 3] = 255;
+        }
+      }
+      cBase.putImageData(imgBase, 0, 0);
+      cBias.putImageData(imgBias, 0, 0);
+    }
+    drawFilterBanks();
+
+    // 2. Render 16-Face Equal-Step Circular Ring
     const stage = document.getElementById('ring-stage');
-    const tbody = document.getElementById('ring-table-body');
+    const N_STEPS = 16;
     const R_PCT = 40;
 
-    ringData.forEach((d) => {
-      const rad = (d.eqDeg * Math.PI) / 180;
+    for (let k = 0; k < N_STEPS; k++) {
+      const eqDeg = k * (360 / N_STEPS);
+      const rad = (eqDeg * Math.PI) / 180;
       const x = 50 + R_PCT * Math.cos(rad);
-      const y = 50 - R_PCT * Math.sin(rad); // counter-clockwise from 0 deg = East
-      const imgSrc = `stimuli/stim_${String(d.step).padStart(2, '0')}.png`;
+      const y = 50 - R_PCT * Math.sin(rad);
+      const imgSrc = `stimuli/stim_${String(k + 1).padStart(2, '0')}.png`;
 
       const node = document.createElement('div');
       node.className = 'ring-node';
       node.style.left = `${x}%`;
       node.style.top = `${y}%`;
-      node.title = `Step ${d.step} | Eq: ${d.eqDeg}° | Actual: ${d.actDeg}° | Surprisal: ${d.bits.toFixed(2)} bits`;
-      node.innerHTML = `<img src="${imgSrc}" alt="Step ${d.step}" /><div class="ring-deg">${d.eqDeg.toFixed(1)}&deg;</div>`;
+      node.innerHTML = `<img src="${imgSrc}" alt="Step ${k + 1}" /><div class="ring-deg">${eqDeg.toFixed(1)}&deg;</div>`;
       stage.appendChild(node);
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${d.step}</td><td>${d.eqDeg.toFixed(1)}&deg;</td><td>${d.actDeg.toFixed(2)}&deg;</td><td>${d.radius.toFixed(3)}</td><td>${d.bits.toFixed(4)}</td>`;
-      tbody.appendChild(tr);
-    });
+    }
   </script>
 </body>
 </html>
