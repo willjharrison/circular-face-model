@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Information-Theoretic Circular Face Space</title>
+  <style>
+    :root {
+      --bg: #111317;
+      --card: #1a1d24;
+      --border: #2a2f3a;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #7ab8ff;
+      --midgrey: #808080;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 36px 20px 64px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { font-size: 1.9rem; font-weight: 600; margin: 0 0 8px; }
+    h2 { font-size: 1.25rem; font-weight: 600; margin: 34px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    p { color: #d2d6dc; margin: 0 0 14px; }
+    .subtitle { color: var(--muted); font-size: 1rem; margin-bottom: 26px; }
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin: 18px 0 28px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-val { font-size: 1.45rem; font-weight: 600; color: var(--accent); margin-top: 4px; }
+    .stat-sub { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 22px;
+      font-size: 0.92rem;
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--muted); font-weight: 500; background: #15181e; }
+    tr:last-child td { border-bottom: none; }
+    .ring-panel {
+      background: var(--midgrey);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 20px 0 28px;
+      text-align: center;
+    }
+    .ring-title { color: #ffffff; font-size: 1rem; margin-bottom: 10px; font-weight: 500; }
+    .ring-stage {
+      position: relative;
+      width: min(640px, 92vw);
+      height: min(640px, 92vw);
+      margin: 0 auto;
+    }
+    .ring-circle {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 68%; height: 68%;
+      transform: translate(-50%, -50%);
+      border: 1.5px dashed rgba(255,255,255,0.65);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .ring-node {
+      position: absolute;
+      width: 15%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .ring-node img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.15s;
+    }
+    .ring-node:hover img { transform: scale(1.16); }
+    .ring-deg {
+      font-size: 0.72rem;
+      color: #ffffff;
+      margin-top: 2px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    }
+    code {
+      background: #232730;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Information-Theoretic Circular Face Space</h1>
+    <p class="subtitle">
+      Selecting unedited celebrity faces at CDF-equalised perceptual steps using a frequency-space neural filter bank and L2-regularised multinomial logistic regression.
+    </p>
+
+    <div class="grid-cards">
+      <div class="stat-card">
+        <div class="stat-label">Stimulus Database</div>
+        <div class="stat-val">1,440 faces</div>
+        <div class="stat-sub">126 identities (&ge; 5 exemplars) used for training</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">5-Fold CV Top-1</div>
+        <div class="stat-val">13.55%</div>
+        <div class="stat-sub">Chance = 0.79% (~17&times; above chance)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">5-Fold CV Top-5</div>
+        <div class="stat-val">27.71%</div>
+        <div class="stat-sub">Chance = 3.97%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Circular Entropy</div>
+        <div class="stat-val">2.64 bits</div>
+        <div class="stat-sub">Von Mises KDE (&kappa; = 6) over 2D weight space</div>
+      </div>
+    </div>
+
+    <h2>1. Image Preprocessing &amp; Filter Bank</h2>
+    <p>
+      Each of the 1,440 unedited images in <code>Men/</code> is resized to <code>128&times;128</code>, gamma-corrected (<code>&gamma; = 2</code>),
+      mean-subtracted, divided by its standard deviation (RMS contrast normalisation), and windowed with a smooth power-4 elliptical aperture
+      (<code>maskRx = 0.72</code>, <code>maskRy = 0.88</code>).
+    </p>
+    <p>
+      Each face is filtered in 2D Fourier space using a complete bank of <strong>16 orientations &times; 8 spatial frequencies</strong> (<code>128</code> filters, 4–32 cyc/img via <code>createBandPassFilters_customSizes</code>), summed globally per filter. A second overcomplete model adds <strong>2 &times; 2 = 4</strong> horizontal-biased low-SF filters (<code>&plusmn;10&deg;</code> around <code>0&deg;</code>, <code>10&deg;</code> bandwidth).
+    </p>
+
+    <h2>2. L2 Multinomial Logistic Regression: Base vs. Horizontal-Biased</h2>
+    <p>
+      Both models were evaluated on identical 5-fold stratified cross-validation splits (<code>N = 1,144</code> exemplars, <code>C = 126</code> identities, <code>&lambda; = 0.001</code>).
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Filters</th>
+          <th>Params</th>
+          <th>CV Top-1</th>
+          <th>CV Top-5</th>
+          <th>CV NLL (bits)</th>
+          <th>AIC</th>
+          <th>BIC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Base (Complete)</strong></td>
+          <td>128</td>
+          <td>16,254</td>
+          <td>13.46%</td>
+          <td>27.88%</td>
+          <td>7.559</td>
+          <td>33,549</td>
+          <td>115,510</td>
+        </tr>
+        <tr>
+          <td><strong>Biased (+2&times;2 Horiz)</strong></td>
+          <td>132</td>
+          <td>16,758</td>
+          <td>13.55%</td>
+          <td>27.71%</td>
+          <td>7.647</td>
+          <td>34,529</td>
+          <td>119,030</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      While the 4 added low-SF horizontal filters carry substantial weight norms (<code>||W||<sub>2</sub></code> = 2.54–3.17), the complete <code>16&times;8</code> base bank already spans horizontal low frequencies—so adding 504 extra parameters slightly increases held-out cross-entropy (7.559 &rarr; 7.647 bits) and BIC.
+    </p>
+
+    <h2>3. Circular Surprisal &amp; Equal-Step Face Ring</h2>
+    <p>
+      Projecting all 1,440 faces onto the top 2 singular vectors of the learned weight matrix <code>W</code> yields a 2D identity-predictive plane. Fitting a von Mises KDE yields circular surprisal <code>I(&theta;) = -log<sub>2</sub> p(&theta;)</code>, and inverting the empirical CDF selects 16 unique-identity original faces at equal perceptual steps starting at <code>0&deg;</code> (due east).
+    </p>
+
+    <div class="ring-panel">
+      <div class="ring-title">16 Masked Original Faces Around the CDF-Equalised Circle (0&deg; = East)</div>
+      <div class="ring-stage" id="ring-stage">
+        <div class="ring-circle"></div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Equal-Step Angle</th>
+          <th>Actual Angle</th>
+          <th>Radius</th>
+          <th>Surprisal (bits)</th>
+        </tr>
+      </thead>
+      <tbody id="ring-table-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const ringData = [
+      { step: 1,  eqDeg: 0.0,   actDeg: 359.99, radius: 1.2486, bits: 2.6387 },
+      { step: 2,  eqDeg: 22.5,  actDeg: 20.04,  radius: 0.7641, bits: 2.4947 },
+      { step: 3,  eqDeg: 45.0,  actDeg: 40.06,  radius: 0.9347, bits: 2.4262 },
+      { step: 4,  eqDeg: 67.5,  actDeg: 60.32,  radius: 0.8620, bits: 2.4566 },
+      { step: 5,  eqDeg: 90.0,  actDeg: 79.97,  radius: 1.1894, bits: 2.5698 },
+      { step: 6,  eqDeg: 112.5, actDeg: 102.44, radius: 0.8731, bits: 2.7497 },
+      { step: 7,  eqDeg: 135.0, actDeg: 128.51, radius: 1.0522, bits: 2.9186 },
+      { step: 8,  eqDeg: 157.5, actDeg: 155.32, radius: 0.8394, bits: 2.8812 },
+      { step: 9,  eqDeg: 180.0, actDeg: 179.99, radius: 0.7742, bits: 2.6318 },
+      { step: 10, eqDeg: 202.5, actDeg: 200.01, radius: 0.8311, bits: 2.4398 },
+      { step: 11, eqDeg: 225.0, actDeg: 219.02, radius: 1.2028, bits: 2.3836 },
+      { step: 12, eqDeg: 247.5, actDeg: 238.17, radius: 0.9709, bits: 2.4554 },
+      { step: 13, eqDeg: 270.0, actDeg: 259.24, radius: 0.7813, bits: 2.6139 },
+      { step: 14, eqDeg: 292.5, actDeg: 282.92, radius: 0.8466, bits: 2.8244 },
+      { step: 15, eqDeg: 315.0, actDeg: 310.54, radius: 0.8519, bits: 2.9296 },
+      { step: 16, eqDeg: 337.5, actDeg: 335.52, radius: 0.9772, bits: 2.8272 }
+    ];
+
+    const stage = document.getElementById('ring-stage');
+    const tbody = document.getElementById('ring-table-body');
+    const R_PCT = 40;
+
+    ringData.forEach((d) => {
+      const rad = (d.eqDeg * Math.PI) / 180;
+      const x = 50 + R_PCT * Math.cos(rad);
+      const y = 50 - R_PCT * Math.sin(rad); // counter-clockwise from 0 deg = East
+      const imgSrc = `stimuli/stim_${String(d.step).padStart(2, '0')}.png`;
+
+      const node = document.createElement('div');
+      node.className = 'ring-node';
+      node.style.left = `${x}%`;
+      node.style.top = `${y}%`;
+      node.title = `Step ${d.step} | Eq: ${d.eqDeg}° | Actual: ${d.actDeg}° | Surprisal: ${d.bits.toFixed(2)} bits`;
+      node.innerHTML = `<img src="${imgSrc}" alt="Step ${d.step}" /><div class="ring-deg">${d.eqDeg.toFixed(1)}&deg;</div>`;
+      stage.appendChild(node);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${d.step}</td><td>${d.eqDeg.toFixed(1)}&deg;</td><td>${d.actDeg.toFixed(2)}&deg;</td><td>${d.radius.toFixed(3)}</td><td>${d.bits.toFixed(4)}</td>`;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>
