@@ -37,10 +37,11 @@
       background: #222222;
       color: #ffffff;
       border: 1px solid #444444;
-      padding: 12px 28px;
+      padding: 12px 24px;
       font-size: 1rem;
       border-radius: 8px;
       cursor: pointer;
+      margin: 0 6px;
       transition: background 0.15s;
     }
     .btn:hover { background: #333333; }
@@ -101,7 +102,7 @@
     }
     textarea {
       width: 100%;
-      max-width: 620px;
+      max-width: 640px;
       height: 300px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 0.88rem;
@@ -155,9 +156,12 @@
     <!-- Done Screen -->
     <div id="screen-done" class="hidden">
       <h1>All Done — Thank You!</h1>
-      <p>Please copy the two columns below and send them back:</p>
+      <p>Please copy the two columns below (or download CSV) and send them back:</p>
       <textarea id="output-data" readonly></textarea>
-      <button class="btn" id="btn-copy">Copy Data</button>
+      <div>
+        <button class="btn" id="btn-copy">Copy Data</button>
+        <button class="btn" id="btn-download">Download CSV</button>
+      </div>
       <div class="hint" id="copy-status"></div>
     </div>
   </div>
@@ -172,15 +176,17 @@
       img.src = stimPath(i);
     }
 
+    function maybeFlipPair(pair) {
+      return Math.random() < 0.5 ? [pair[0], pair[1]] : [pair[1], pair[0]];
+    }
+
     // Counterbalanced circular 2AFC design:
-    // 1. Pick random start face s in 0..3, then faceIdx = [s, s+4, s+8, s+12] (every 4th face).
+    // 1. Pick random start face s in 0..3, then faceIdx = [s, s+4, s+8, s+12].
     // 2. Pass 1: For each anchor a in faceIdx:
-    //      near = (a + 1) % 16 (1 step CCW), far = (a + 8) % 16 (opposite a).
-    //      Compare [a, near] vs [a, far].
-    // 3. Pass 2: New anchor b = (near + 8) % 16 = (a + 9) % 16 (opposite old near).
-    //      Now old far (a + 8) is 1 step CW from b (new near), and old near (a + 1) is opposite b (new far).
-    //      Compare [b, old_far] vs [b, old_near].
-    // 4. Counterbalance Pair A (Left) vs Pair B (Right) -> 16 balanced trials.
+    //      near1 = (a + 1) % 16 (1 step CCW), far1 = (a + 8) % 16 (opposite a).
+    // 3. Pass 2: New anchor b = (near1 + 8) % 16 (opposite old near1):
+    //      old far1 becomes new near2, old near1 becomes new far2.
+    // 4. Counterbalance Pair A (Left) vs Pair B (Right) and randomise within-pair order.
     function buildTrials() {
       const startOffset = Math.floor(Math.random() * 4);
       const trials = [];
@@ -191,10 +197,9 @@
         const near1 = (a + 1) % N_STEPS;
         const far1  = (a + 8) % N_STEPS;
 
-        // Pass 1: anchor a
         for (const nearSide of ['A', 'B']) {
-          const nearPair = [a, near1];
-          const farPair  = [a, far1];
+          const nearPair = maybeFlipPair([a, near1]);
+          const farPair  = maybeFlipPair([a, far1]);
           const condId = `P1_A${pad2(a)}_N${pad2(near1)}_F${pad2(far1)}_Near${nearSide}`;
           trials.push({
             condId,
@@ -204,13 +209,12 @@
           });
         }
 
-        // Pass 2: anchor b opposite old near1 -> old far1 becomes new near, old near1 becomes new far
         const b     = (near1 + 8) % N_STEPS;
         const near2 = far1;
         const far2  = near1;
         for (const nearSide of ['A', 'B']) {
-          const nearPair = [b, near2];
-          const farPair  = [b, far2];
+          const nearPair = maybeFlipPair([b, near2]);
+          const farPair  = maybeFlipPair([b, far2]);
           const condId = `P2_A${pad2(b)}_N${pad2(near2)}_F${pad2(far2)}_Near${nearSide}`;
           trials.push({
             condId,
@@ -221,7 +225,6 @@
         }
       }
 
-      // Fisher-Yates shuffle
       for (let i = trials.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [trials[i], trials[j]] = [trials[j], trials[i]];
@@ -298,6 +301,18 @@
         document.execCommand('copy');
         document.getElementById('copy-status').textContent = 'Selected — press Cmd+C / Ctrl+C to copy.';
       }
+    });
+
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const tsv = document.getElementById('output-data').value;
+      const csv = tsv.replace(/\t/g, ',');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `face_similarity_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
     });
   </script>
 </body>
