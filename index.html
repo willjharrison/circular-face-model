@@ -312,6 +312,7 @@
       }
     }
 
+    const pageLoadTag = Date.now();
     function applyResults(r) {
       document.getElementById('glm-desc').innerHTML =
         `To isolate image statistics that carry facial identity rather than incidental lighting or pose variation, I used standard generalised linear modelling techniques with L2 regularisation (multinomial logistic regression) across ${r.nExemplars.toLocaleString()} unedited exemplars from ${r.nIdentities} identities (each represented by at least 5 photographs).`;
@@ -326,7 +327,7 @@
     }
 
     applyResults(defaultResults);
-    fetch('results.json')
+    fetch(\`results.json?t=${pageLoadTag}\`)
       .then(resp => resp.ok ? resp.json() : null)
       .then(data => { if (data) applyResults(data); })
       .catch(() => {});
