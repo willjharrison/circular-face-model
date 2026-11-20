@@ -140,7 +140,7 @@
     <div class="figure-card">
       <img class="fig-img" src="figures/within_between_faces.png" alt="Within-identity vs between-identity masked face exemplars" />
       <div class="fig-caption">
-        <strong>Figure 1.</strong> Example stimuli from the database after greyscale conversion, gamma linearisation, RMS contrast normalisation, and elliptical aperture masking (exact preprocessing used by the model). Top row: four within-identity exemplars of a single celebrity. Bottom row: four between-identity exemplars across different celebrities.
+        <strong>Figure 1.</strong> Example stimuli from the database after greyscale conversion, gamma linearisation, RMS contrast normalisation, and elliptical aperture masking (exact preprocessing used by the model). Details of the database can be found in Dear &amp; Harrison (2022). Top row: four within-identity exemplars of a single celebrity. Bottom row: four between-identity exemplars across different celebrities.
       </div>
     </div>
 
@@ -208,6 +208,12 @@
       </p>
     </div>
     <a class="cta-btn" href="task.html">Launch 2AFC Validation Task &rarr;</a>
+
+    <h2>Reference</h2>
+    <p style="font-size: 0.92rem; color: var(--muted);">
+      Dear, M., &amp; Harrison, W. J. (2022). The influence of visual distortion on face recognition. <em>Cortex</em>, 146, 238&ndash;249.
+      <a href="https://doi.org/10.1016/j.cortex.2021.10.008" target="_blank" rel="noopener" style="color: var(--accent);">https://doi.org/10.1016/j.cortex.2021.10.008</a>
+    </p>
   </div>
 
   <script>
@@ -302,7 +308,7 @@
         const rad = (eqDeg * Math.PI) / 180;
         const x = 50 + R_PCT * Math.cos(rad);
         const y = 50 - R_PCT * Math.sin(rad);
-        const imgSrc = `stimuli/stim_${String(k + 1).padStart(2, '0')}.png`;
+        const imgSrc = `stimuli/stim_${String(k + 1).padStart(2, '0')}.png?v=${pageLoadTag}`;
         const node = document.createElement('div');
         node.className = 'ring-node';
         node.style.left = `${x}%`;
@@ -327,7 +333,7 @@
     }
 
     applyResults(defaultResults);
-    fetch(\`results.json?t=${pageLoadTag}\`)
+    fetch(`results.json?t=${pageLoadTag}`)
       .then(resp => resp.ok ? resp.json() : null)
       .then(data => { if (data) applyResults(data); })
       .catch(() => {});
