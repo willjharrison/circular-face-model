@@ -148,109 +148,51 @@
     <p>
       Rather than modelling raw pixel values—which are dominated by arbitrary shifts in head alignment, lighting, and background—I transformed each masked face into 2D Fourier space and passed it through a neurally-inspired bank of log-spaced spatial frequency and orientation bandpass filters. Summing the magnitude of each filter's response yields a phase-invariant representation that is tolerant to small spatial shifts.
     </p>
-    <p>
-      The base filter bank forms a complete basis set tiling 16 orientations and 8 log-spaced spatial frequency bands (128 filters total). While coding the circular model, I also thought it would be a fun side-hypothesis to test whether biasing the representation toward horizontal structure would improve identity decoding. Human face identification depends disproportionately on horizontal orientation bands—the so-called "biological bar codes" formed by the eyes, eyebrows, and mouth (Dakin &amp; Watt, 2009). To test this, I created a second, overcomplete filter bank by adding 4 narrow-band horizontal filters (<code>&plusmn;10&deg;</code> around horizontal, <code>10&deg;</code> bandwidth) across the lowest spatial frequencies.
+    <p id="filter-desc">
+      The base filter bank forms a complete basis set tiling 16 orientations and 8 log-spaced spatial frequency bands (128 filters total). While coding the circular model, I also thought it would be a fun side-hypothesis to test whether biasing the representation toward horizontal structure would improve identity decoding. Human face identification depends disproportionately on horizontal orientation bands—the so-called "biological bar codes" formed by the eyes, eyebrows, and mouth (Dakin &amp; Watt, 2009). To test this, I created a second, overcomplete filter bank by adding 4 extra low-frequency filters centred near horizontal.
     </p>
 
     <div class="figure-card">
       <img class="fig-img" src="figures/filter_examples.png" alt="Individual log-scaled orientation and spatial frequency filters in 2D Fourier space" />
       <div class="fig-caption">
-        <strong>Figure 2.</strong> Examples of individual log-scaled filters in 2D Fourier frequency space (generated directly in MATLAB). Top row: three representative filters from the base 16&times;8 bank spanning low, mid, and high spatial frequencies and different orientations. Bottom row: three of the added horizontal-biased low-frequency filters centred at &plusmn;10&deg;.
+        <strong>Figure 2.</strong> Examples of individual log-scaled filters in 2D Fourier frequency space (generated directly in MATLAB). Top row: three representative filters from the base bank spanning low, mid, and high spatial frequencies and different orientations. Bottom row: three of the added horizontal-biased low-frequency filters.
       </div>
     </div>
 
     <div class="figure-card">
       <img class="fig-img" src="figures/filter_bank_sums.png" alt="Sum of Base vs Horizontal-Biased filter banks in 2D Fourier space" />
       <div class="fig-caption">
-        <strong>Figure 3.</strong> Total frequency-space coverage obtained by summing all filters in the base bank (left, 128 filters summing uniformly to 1 across the analytic half-plane) versus the horizontal-biased overcomplete bank (right, 132 filters showing the intentional overrepresentation along &plusmn;10&deg; horizontal at low spatial frequencies).
+        <strong>Figure 3.</strong> Total frequency-space coverage obtained by summing all filters in the base bank (left, summing uniformly to 1 across the analytic half-plane) versus the horizontal-biased overcomplete bank (right, showing the intentional overrepresentation at low spatial frequencies).
       </div>
     </div>
 
     <h2>3. Drawing Boundaries Between Identities</h2>
-    <p>
+    <p id="glm-desc">
       To isolate image statistics that carry facial identity rather than incidental lighting or pose variation, I used standard generalised linear modelling techniques with L2 regularisation (multinomial logistic regression) across 1,144 unedited exemplars from 126 identities (each represented by at least 5 photographs).
     </p>
     <p>
-      The key intuition here is that the model uses each image's filter responses to <strong>draw linear decision boundaries between identities</strong>. Taking the top two singular vectors of those learned identity boundaries projects all 1,440 faces onto a single 2D plane organised by identity-diagnostic structure.
+      The key intuition here is that the model uses each image's filter responses to <strong>draw linear decision boundaries between identities</strong>. Taking the top two singular vectors of those learned identity boundaries projects all faces onto a single 2D plane organised by identity-diagnostic structure.
     </p>
 
     <h2>4. Identity Decoding Accuracy vs. Chance Baseline</h2>
-    <p>
-      I evaluated both models using identical 5-fold cross-validation splits. Both the base model (13.46% &plusmn; 1.86%) and the horizontal-biased model (13.55% &plusmn; 2.20%) decoded held-out celebrity identities well above the 0.79% Top-1 chance baseline (~17&times; chance), and reached ~27.8% Top-5 accuracy against a 3.97% chance baseline.
-    </p>
-    <p>
-      As for my side-hypothesis on horizontal bar codes, adding the 4 extra horizontal filters produced virtually identical accuracy while adding 504 free parameters—indicating that the complete 16&times;8 bank already captures the relevant horizontal low-frequency information.
+    <p id="acc-desc">
+      I evaluated both models using identical 5-fold cross-validation splits. Both the base model (13.11% &plusmn; 1.09%) and the horizontal-biased model (13.46% &plusmn; 2.19%) decoded held-out celebrity identities well above the 0.79% Top-1 chance baseline (~17&times; chance), and reached ~27% Top-5 accuracy against a 3.97% chance baseline.
     </p>
 
     <div class="figure-card">
-      <svg viewBox="0 0 820 300" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-        <!-- Left Panel: Top-1 -->
-        <text x="205" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-1 Identity Decoding (~17&times; Chance)</text>
-        <line x1="65" y1="240" x2="365" y2="240" stroke="#444b59" stroke-width="1.2"/>
-        <line x1="65" y1="45"  x2="65"  y2="240" stroke="#444b59" stroke-width="1.2"/>
-        <text x="57" y="244" text-anchor="end" fill="#9aa0a6" font-size="11">0%</text>
-        <text x="57" y="195" text-anchor="end" fill="#9aa0a6" font-size="11">5%</text>
-        <text x="57" y="146" text-anchor="end" fill="#9aa0a6" font-size="11">10%</text>
-        <text x="57" y="98"  text-anchor="end" fill="#9aa0a6" font-size="11">15%</text>
-        <text x="57" y="49"  text-anchor="end" fill="#9aa0a6" font-size="11">20%</text>
-        <line x1="65" y1="232.3" x2="365" y2="232.3" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
-        <text x="362" y="226" text-anchor="end" fill="#ff9f9e" font-size="11">Chance baseline (0.79%)</text>
-
-        <rect x="115" y="108.8" width="64" height="131.2" rx="4" fill="#5a9cf8"/>
-        <line x1="147" y1="90.7" x2="147" y2="126.9" stroke="#ffffff" stroke-width="1.8"/>
-        <line x1="139" y1="90.7" x2="155" y2="90.7" stroke="#ffffff" stroke-width="1.8"/>
-        <line x1="139" y1="126.9" x2="155" y2="126.9" stroke="#ffffff" stroke-width="1.8"/>
-        <circle cx="141" cy="113.3" r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="144" cy="87.3"  r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="147" cy="95.7"  r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="150" cy="122.8" r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="153" cy="130.5" r="3" fill="#ffffff" opacity="0.85"/>
-        <text x="147" y="81" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">13.5%</text>
-        <text x="147" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (128)</text>
-
-        <rect x="245" y="107.9" width="64" height="132.1" rx="4" fill="#8c7ae6"/>
-        <line x1="277" y1="86.4" x2="277" y2="129.4" stroke="#ffffff" stroke-width="1.8"/>
-        <line x1="269" y1="86.4" x2="285" y2="86.4" stroke="#ffffff" stroke-width="1.8"/>
-        <line x1="269" y1="129.4" x2="285" y2="129.4" stroke="#ffffff" stroke-width="1.8"/>
-        <circle cx="271" cy="106.2" r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="274" cy="83.4"  r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="277" cy="95.7"  r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="280" cy="132.2" r="3" fill="#ffffff" opacity="0.85"/>
-        <circle cx="283" cy="130.5" r="3" fill="#ffffff" opacity="0.85"/>
-        <text x="277" y="76" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">13.5%</text>
-        <text x="277" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (132)</text>
-
-        <!-- Right Panel: Top-5 -->
-        <text x="615" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-5 Identity Decoding (~7&times; Chance)</text>
-        <line x1="475" y1="240" x2="775" y2="240" stroke="#444b59" stroke-width="1.2"/>
-        <line x1="475" y1="45"  x2="475" y2="240" stroke="#444b59" stroke-width="1.2"/>
-        <text x="467" y="244" text-anchor="end" fill="#9aa0a6" font-size="11">0%</text>
-        <text x="467" y="188" text-anchor="end" fill="#9aa0a6" font-size="11">10%</text>
-        <text x="467" y="133" text-anchor="end" fill="#9aa0a6" font-size="11">20%</text>
-        <text x="467" y="77"  text-anchor="end" fill="#9aa0a6" font-size="11">30%</text>
-        <line x1="475" y1="217.9" x2="775" y2="217.9" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
-        <text x="772" y="211" text-anchor="end" fill="#ff9f9e" font-size="11">Chance baseline (3.97%)</text>
-
-        <rect x="525" y="84.7" width="64" height="155.3" rx="4" fill="#5a9cf8"/>
-        <text x="557" y="77" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">27.9%</text>
-        <text x="557" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (128)</text>
-
-        <rect x="655" y="85.6" width="64" height="154.4" rx="4" fill="#8c7ae6"/>
-        <text x="687" y="78" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">27.7%</text>
-        <text x="687" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (132)</text>
-      </svg>
+      <svg id="acc-svg" viewBox="0 0 820 300" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;"></svg>
       <div class="fig-caption">
-        <strong>Figure 4.</strong> Five-fold cross-validated identity classification across 126 celebrities (&ge; 5 exemplars each). Error bars denote &plusmn;1 SD across folds; white dots show individual fold accuracies relative to the dashed chance baselines.
+        <strong>Figure 4.</strong> Five-fold cross-validated identity classification. Error bars denote &plusmn;1 SD across folds; white dots show individual fold accuracies relative to the dashed chance baselines.
       </div>
     </div>
 
     <h2>5. Resulting Equal-Step Circular Face Space</h2>
-    <p>
-      Projecting all 1,440 faces onto the top two identity-boundary axes, estimating the circular von Mises density (<code>H = 2.64 bits</code>), and sampling uniformly along its cumulative distribution yields 16 unedited faces spaced around the circle starting at <code>0&deg;</code> (due east).
+    <p id="ring-desc">
+      Projecting all 1,440 faces onto the top two identity-boundary axes, estimating the circular von Mises density (<code>H = 2.63 bits</code>), and sampling uniformly along its cumulative distribution yields 16 unedited faces spaced around the circle starting at <code>0&deg;</code> (due east).
     </p>
 
     <div class="ring-panel">
-      <div class="ring-title">16 Masked Original Faces Around the CDF-Equalised Circle (0&deg; = East)</div>
+      <div class="ring-title" id="ring-title">16 Masked Original Faces Around the CDF-Equalised Circle (0&deg; = East)</div>
       <div class="ring-stage" id="ring-stage">
         <div class="ring-circle"></div>
       </div>
@@ -269,24 +211,125 @@
   </div>
 
   <script>
-    const stage = document.getElementById('ring-stage');
-    const N_STEPS = 16;
-    const R_PCT = 40;
+    const defaultResults = {
+      nTotalImages: 1440,
+      nExemplars: 1144,
+      nIdentities: 126,
+      nOris: 16,
+      nFreqs: 8,
+      nBaseFilters: 128,
+      nBiasedFilters: 132,
+      baseTop1: 13.112,
+      baseTop1SD: 1.09,
+      baseFolds: [13.72, 14.06, 13.00, 12.98, 11.23],
+      baseTop5: 26.573,
+      biasTop1: 13.462,
+      biasTop1SD: 2.19,
+      biasFolds: [14.08, 15.26, 14.35, 12.98, 9.63],
+      biasTop5: 27.622,
+      chanceTop1: 0.7937,
+      chanceTop5: 3.968,
+      entropyBits: 2.63,
+      nSteps: 16
+    };
 
-    for (let k = 0; k < N_STEPS; k++) {
-      const eqDeg = k * (360 / N_STEPS);
-      const rad = (eqDeg * Math.PI) / 180;
-      const x = 50 + R_PCT * Math.cos(rad);
-      const y = 50 - R_PCT * Math.sin(rad);
-      const imgSrc = `stimuli/stim_${String(k + 1).padStart(2, '0')}.png`;
+    function renderAccuracySVG(r) {
+      const svg = document.getElementById('acc-svg');
+      const yMax1 = Math.max(20, Math.ceil((Math.max(r.baseTop1 + r.baseTop1SD, r.biasTop1 + r.biasTop1SD) + 3) / 5) * 5);
+      const yMax5 = Math.max(35, Math.ceil((Math.max(r.baseTop5, r.biasTop5) + 5) / 5) * 5);
+      const yBase = 240, yTop = 45, H = yBase - yTop;
+      const y1 = (v) => yBase - (v / yMax1) * H;
+      const y5 = (v) => yBase - (v / yMax5) * H;
 
-      const node = document.createElement('div');
-      node.className = 'ring-node';
-      node.style.left = `${x}%`;
-      node.style.top = `${y}%`;
-      node.innerHTML = `<img src="${imgSrc}" alt="Step ${k + 1}" /><div class="ring-deg">${eqDeg.toFixed(1)}&deg;</div>`;
-      stage.appendChild(node);
+      const foldDots = (folds, cx) => folds.map((f, i) =>
+        `<circle cx="${cx - 8 + i * 4}" cy="${y1(f).toFixed(1)}" r="3" fill="#ffffff" opacity="0.85"/>`
+      ).join('');
+
+      svg.innerHTML = `
+        <text x="205" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-1 Identity Decoding (~${Math.round(r.biasTop1 / r.chanceTop1)}&times; Chance)</text>
+        <line x1="65" y1="${yBase}" x2="365" y2="${yBase}" stroke="#444b59" stroke-width="1.2"/>
+        <line x1="65" y1="${yTop}"  x2="65"  y2="${yBase}" stroke="#444b59" stroke-width="1.2"/>
+        ${[0, 0.25, 0.5, 0.75, 1].map(frac => {
+          const val = Math.round(frac * yMax1);
+          const yy = y1(val).toFixed(1);
+          return `<text x="57" y="${Number(yy)+4}" text-anchor="end" fill="#9aa0a6" font-size="11">${val}%</text>`;
+        }).join('')}
+        <line x1="65" y1="${y1(r.chanceTop1).toFixed(1)}" x2="365" y2="${y1(r.chanceTop1).toFixed(1)}" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="362" y="${(y1(r.chanceTop1) - 6).toFixed(1)}" text-anchor="end" fill="#ff9f9e" font-size="11">Chance (${r.chanceTop1.toFixed(2)}%)</text>
+
+        <rect x="115" y="${y1(r.baseTop1).toFixed(1)}" width="64" height="${(yBase - y1(r.baseTop1)).toFixed(1)}" rx="4" fill="#5a9cf8"/>
+        <line x1="147" y1="${y1(r.baseTop1 + r.baseTop1SD).toFixed(1)}" x2="147" y2="${y1(Math.max(0, r.baseTop1 - r.baseTop1SD)).toFixed(1)}" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="139" y1="${y1(r.baseTop1 + r.baseTop1SD).toFixed(1)}" x2="155" y2="${y1(r.baseTop1 + r.baseTop1SD).toFixed(1)}" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="139" y1="${y1(Math.max(0, r.baseTop1 - r.baseTop1SD)).toFixed(1)}" x2="155" y2="${y1(Math.max(0, r.baseTop1 - r.baseTop1SD)).toFixed(1)}" stroke="#ffffff" stroke-width="1.8"/>
+        ${foldDots(r.baseFolds, 147)}
+        <text x="147" y="${(y1(r.baseTop1 + r.baseTop1SD) - 9).toFixed(1)}" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">${r.baseTop1.toFixed(1)}%</text>
+        <text x="147" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (${r.nBaseFilters})</text>
+
+        <rect x="245" y="${y1(r.biasTop1).toFixed(1)}" width="64" height="${(yBase - y1(r.biasTop1)).toFixed(1)}" rx="4" fill="#8c7ae6"/>
+        <line x1="277" y1="${y1(r.biasTop1 + r.biasTop1SD).toFixed(1)}" x2="277" y2="${y1(Math.max(0, r.biasTop1 - r.biasTop1SD)).toFixed(1)}" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="269" y1="${y1(r.biasTop1 + r.biasTop1SD).toFixed(1)}" x2="285" y2="${y1(r.biasTop1 + r.biasTop1SD).toFixed(1)}" stroke="#ffffff" stroke-width="1.8"/>
+        <line x1="269" y1="${y1(Math.max(0, r.biasTop1 - r.biasTop1SD)).toFixed(1)}" x2="285" y2="${y1(Math.max(0, r.biasTop1 - r.biasTop1SD)).toFixed(1)}" stroke="#ffffff" stroke-width="1.8"/>
+        ${foldDots(r.biasFolds, 277)}
+        <text x="277" y="${(y1(r.biasTop1 + r.biasTop1SD) - 9).toFixed(1)}" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">${r.biasTop1.toFixed(1)}%</text>
+        <text x="277" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (${r.nBiasedFilters})</text>
+
+        <text x="615" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-5 Identity Decoding (~${Math.round(r.biasTop5 / r.chanceTop5)}&times; Chance)</text>
+        <line x1="475" y1="${yBase}" x2="775" y2="${yBase}" stroke="#444b59" stroke-width="1.2"/>
+        <line x1="475" y1="${yTop}"  x2="475" y2="${yBase}" stroke="#444b59" stroke-width="1.2"/>
+        ${[0, 10, 20, 30].filter(v => v <= yMax5).map(val => {
+          const yy = y5(val).toFixed(1);
+          return `<text x="467" y="${Number(yy)+4}" text-anchor="end" fill="#9aa0a6" font-size="11">${val}%</text>`;
+        }).join('')}
+        <line x1="475" y1="${y5(r.chanceTop5).toFixed(1)}" x2="775" y2="${y5(r.chanceTop5).toFixed(1)}" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="772" y="${(y5(r.chanceTop5) - 6).toFixed(1)}" text-anchor="end" fill="#ff9f9e" font-size="11">Chance (${r.chanceTop5.toFixed(2)}%)</text>
+
+        <rect x="525" y="${y5(r.baseTop5).toFixed(1)}" width="64" height="${(yBase - y5(r.baseTop5)).toFixed(1)}" rx="4" fill="#5a9cf8"/>
+        <text x="557" y="${(y5(r.baseTop5) - 8).toFixed(1)}" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">${r.baseTop5.toFixed(1)}%</text>
+        <text x="557" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (${r.nBaseFilters})</text>
+
+        <rect x="655" y="${y5(r.biasTop5).toFixed(1)}" width="64" height="${(yBase - y5(r.biasTop5)).toFixed(1)}" rx="4" fill="#8c7ae6"/>
+        <text x="687" y="${(y5(r.biasTop5) - 8).toFixed(1)}" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">${r.biasTop5.toFixed(1)}%</text>
+        <text x="687" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (${r.nBiasedFilters})</text>
+      `;
     }
+
+    function renderRing(nSteps) {
+      const stage = document.getElementById('ring-stage');
+      stage.querySelectorAll('.ring-node').forEach(el => el.remove());
+      const R_PCT = 40;
+      for (let k = 0; k < nSteps; k++) {
+        const eqDeg = k * (360 / nSteps);
+        const rad = (eqDeg * Math.PI) / 180;
+        const x = 50 + R_PCT * Math.cos(rad);
+        const y = 50 - R_PCT * Math.sin(rad);
+        const imgSrc = `stimuli/stim_${String(k + 1).padStart(2, '0')}.png`;
+        const node = document.createElement('div');
+        node.className = 'ring-node';
+        node.style.left = `${x}%`;
+        node.style.top = `${y}%`;
+        node.innerHTML = `<img src="${imgSrc}" alt="Step ${k + 1}" /><div class="ring-deg">${eqDeg.toFixed(1)}&deg;</div>`;
+        stage.appendChild(node);
+      }
+    }
+
+    function applyResults(r) {
+      document.getElementById('glm-desc').innerHTML =
+        `To isolate image statistics that carry facial identity rather than incidental lighting or pose variation, I used standard generalised linear modelling techniques with L2 regularisation (multinomial logistic regression) across ${r.nExemplars.toLocaleString()} unedited exemplars from ${r.nIdentities} identities (each represented by at least 5 photographs).`;
+      document.getElementById('acc-desc').innerHTML =
+        `I evaluated both models using identical 5-fold cross-validation splits. Both the base model (${r.baseTop1.toFixed(2)}% &plusmn; ${r.baseTop1SD.toFixed(2)}%) and the horizontal-biased model (${r.biasTop1.toFixed(2)}% &plusmn; ${r.biasTop1SD.toFixed(2)}%) decoded held-out celebrity identities well above the ${r.chanceTop1.toFixed(2)}% Top-1 chance baseline (~${Math.round(r.biasTop1 / r.chanceTop1)}&times; chance), and reached ~${r.biasTop5.toFixed(1)}% Top-5 accuracy against a ${r.chanceTop5.toFixed(2)}% chance baseline.`;
+      document.getElementById('ring-desc').innerHTML =
+        `Projecting all ${r.nTotalImages.toLocaleString()} faces onto the top two identity-boundary axes, estimating the circular von Mises density (<code>H = ${r.entropyBits.toFixed(2)} bits</code>), and sampling uniformly along its cumulative distribution yields ${r.nSteps} unedited faces spaced around the circle starting at <code>0&deg;</code> (due east).`;
+      document.getElementById('ring-title').innerHTML =
+        `${r.nSteps} Masked Original Faces Around the CDF-Equalised Circle (0&deg; = East)`;
+      renderAccuracySVG(r);
+      renderRing(r.nSteps);
+    }
+
+    applyResults(defaultResults);
+    fetch('results.json')
+      .then(resp => resp.ok ? resp.json() : null)
+      .then(data => { if (data) applyResults(data); })
+      .catch(() => {});
   </script>
 </body>
 </html>
