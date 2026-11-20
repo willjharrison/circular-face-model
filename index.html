@@ -40,9 +40,9 @@
       background: #2563eb;
       color: #ffffff;
       text-decoration: none;
-      padding: 9px 18px;
+      padding: 10px 20px;
       border-radius: 8px;
-      font-size: 0.92rem;
+      font-size: 0.94rem;
       font-weight: 500;
     }
     .cta-btn:hover { background: #1d4ed8; }
@@ -53,36 +53,17 @@
       padding: 18px;
       margin: 18px 0 24px;
     }
-    .figure-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      align-items: center;
-    }
-    @media (max-width: 720px) {
-      .figure-grid { grid-template-columns: 1fr; }
+    .figure-card img.fig-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
     }
     .fig-caption {
       font-size: 0.86rem;
       color: var(--muted);
       margin-top: 10px;
       line-height: 1.45;
-    }
-    canvas {
-      width: 100%;
-      max-width: 340px;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    .canvas-title {
-      text-align: center;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 8px;
     }
     .ring-panel {
       background: var(--midgrey);
@@ -126,6 +107,13 @@
       margin-top: 2px;
       text-shadow: 0 1px 2px rgba(0,0,0,0.45);
     }
+    .caveat-box {
+      background: rgba(255, 118, 117, 0.08);
+      border: 1px solid rgba(255, 118, 117, 0.35);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 16px 0 20px;
+    }
     code {
       background: #232730;
       padding: 2px 6px;
@@ -138,73 +126,60 @@
   <div class="wrap">
     <h1>Information-Theoretic Circular Face Space</h1>
     <p class="subtitle">
-      Building a perceptually uniform ring of unedited, in-the-wild faces without exhaustive psychophysical calibration.
+      An exploratory attempt to build a perceptually uniform circular space of unedited celebrity faces without extensive psychophysical calibration.
     </p>
-    <a class="cta-btn" href="task.html">Launch 2AFC Validation Task &rarr;</a>
 
     <h2>1. Can Information Theory Create Perceptually Uniform Steps?</h2>
     <p>
-      Simple visual features like colour hue or line orientation naturally form a circle where equal physical steps feel roughly equal.
-      Real celebrity photographs, however, are unaligned, high-dimensional, and vary wildly in lighting and pose—so spacing them equally
-      normally requires thousands of human similarity judgments.
+      Many psychophysical experiments rely on circular stimulus dimensions—such as colour hue or line orientation—because equal physical steps around the circle correspond roughly to equal perceptual steps. Unaligned, naturalistic face photographs have no such built-in geometry. Constructing a perceptually uniform circular face space normally requires thousands of pairwise human similarity judgements.
     </p>
     <p>
-      Applied to images, <strong>information theory</strong> treats the database as a probability distribution <code>p(&theta;)</code> around a
-      2D face circle. Common, typical faces sit in high-density regions (low <em>surprisal</em>, <code>-log<sub>2</sub> p(&theta;)</code>),
-      whereas distinctive faces sit in sparser regions (high surprisal). Under <strong>efficient coding</strong>, human visual discrimination
-      is finest where stimuli are most frequent—so sampling faces at equal steps of the <em>cumulative distribution</em> (CDF) stretches dense
-      regions and compresses sparse regions to produce <strong>perceptually uniform steps</strong>.
-    </p>
-
-    <h2>2. Neurally-Inspired Filter Bank &amp; Horizontal "Bar Codes"</h2>
-    <p>
-      Rather than feeding raw pixels into a model, each face (<code>128&times;128</code>, RMS-contrast normalised and windowed by a smooth
-      elliptical aperture across <code>1,440</code> images) is passed through a bank of bandpass filters in 2D Fourier frequency space.
-      Summing each filter's response gives a phase-invariant representation tolerant to small alignment shifts.
-    </p>
-    <p>
-      Because human face identification relies disproportionately on horizontal orientation structure—so-called
-      <strong>"biological bar codes"</strong> formed by the eyes, eyebrows, and mouth—we compared a <strong>complete</strong> filter bank
-      (16 orientations &times; 8 spatial frequencies = 128 filters) against an <strong>overcomplete, horizontally biased</strong> bank
-      that adds 4 extra low-frequency horizontal filters (<code>&plusmn;10&deg;</code> around <code>0&deg;</code>, <code>10&deg;</code> bandwidth).
+      Here, I asked whether an information-theoretic approach could approximate perceptual uniformity directly from image statistics. Applied to a database of images, information theory treats the stimulus set as a probability distribution <code>p(&theta;)</code> around a 2D circle. Typical faces fall in dense regions of the distribution and carry low <em>surprisal</em> (<code>-log<sub>2</sub> p(&theta;)</code>), whereas unusual faces fall in sparse regions and carry high surprisal. Under efficient coding, human sensitivity is sharpest where stimuli occur most frequently. Sampling faces uniformly along the <em>cumulative distribution function</em> (CDF) of <code>p(&theta;)</code> therefore spaces stimuli closer together in dense regions and farther apart in sparse regions, providing a principled first-pass approximation to perceptually uniform steps.
     </p>
 
     <div class="figure-card">
-      <div class="figure-grid">
-        <div>
-          <div class="canvas-title">Base Complete Bank (16 ori &times; 8 SF = 128)</div>
-          <canvas id="canvas-base" width="320" height="320"></canvas>
-        </div>
-        <div>
-          <div class="canvas-title">Added Horizontal-Biased Filters (+2 &times; 2 at &plusmn;10&deg;)</div>
-          <canvas id="canvas-bias" width="320" height="320"></canvas>
-        </div>
-      </div>
+      <img class="fig-img" src="figures/within_between_faces.png" alt="Within-identity vs between-identity masked face exemplars" />
       <div class="fig-caption">
-        2D Fourier frequency-space representation (origin at DC; radial distance = spatial frequency, angle = orientation).
-        <strong>Left:</strong> Log-spaced frequency rings tiled across 16 orientations.
-        <strong>Right:</strong> Zoomed low-frequency view highlighting the 4 extra narrow-band filters at &plusmn;10&deg; around horizontal (0&deg;).
+        <strong>Figure 1.</strong> Example stimuli from the database after greyscale conversion, gamma linearisation, RMS contrast normalisation, and elliptical aperture masking (exact preprocessing used by the model). Top row: four within-identity exemplars of a single celebrity. Bottom row: four between-identity exemplars across different celebrities.
+      </div>
+    </div>
+
+    <h2>2. Perceptually relevant image processing</h2>
+    <p>
+      Rather than modelling raw pixel values—which are dominated by arbitrary shifts in head alignment, lighting, and background—I transformed each masked face into 2D Fourier space and passed it through a neurally-inspired bank of log-spaced spatial frequency and orientation bandpass filters. Summing the magnitude of each filter's response yields a phase-invariant representation that is tolerant to small spatial shifts.
+    </p>
+    <p>
+      The base filter bank forms a complete basis set tiling 16 orientations and 8 log-spaced spatial frequency bands (128 filters total). While coding the circular model, I also thought it would be a fun side-hypothesis to test whether biasing the representation toward horizontal structure would improve identity decoding. Human face identification depends disproportionately on horizontal orientation bands—the so-called "biological bar codes" formed by the eyes, eyebrows, and mouth (Dakin &amp; Watt, 2009). To test this, I created a second, overcomplete filter bank by adding 4 narrow-band horizontal filters (<code>&plusmn;10&deg;</code> around horizontal, <code>10&deg;</code> bandwidth) across the lowest spatial frequencies.
+    </p>
+
+    <div class="figure-card">
+      <img class="fig-img" src="figures/filter_examples.png" alt="Individual log-scaled orientation and spatial frequency filters in 2D Fourier space" />
+      <div class="fig-caption">
+        <strong>Figure 2.</strong> Examples of individual log-scaled filters in 2D Fourier frequency space (generated directly in MATLAB). Top row: three representative filters from the base 16&times;8 bank spanning low, mid, and high spatial frequencies and different orientations. Bottom row: three of the added horizontal-biased low-frequency filters centred at &plusmn;10&deg;.
+      </div>
+    </div>
+
+    <div class="figure-card">
+      <img class="fig-img" src="figures/filter_bank_sums.png" alt="Sum of Base vs Horizontal-Biased filter banks in 2D Fourier space" />
+      <div class="fig-caption">
+        <strong>Figure 3.</strong> Total frequency-space coverage obtained by summing all filters in the base bank (left, 128 filters summing uniformly to 1 across the analytic half-plane) versus the horizontal-biased overcomplete bank (right, 132 filters showing the intentional overrepresentation along &plusmn;10&deg; horizontal at low spatial frequencies).
       </div>
     </div>
 
     <h2>3. Drawing Boundaries Between Identities</h2>
     <p>
-      To map these filter responses onto facial identity rather than lighting or background noise, we used standard
-      <strong>generalised linear modelling techniques with L2 regularisation</strong> (multinomial logistic regression) across
-      <code>1,144</code> unedited exemplars spanning <code>126</code> identities (&ge; 5 photos each).
+      To isolate image statistics that carry facial identity rather than incidental lighting or pose variation, I used standard generalised linear modelling techniques with L2 regularisation (multinomial logistic regression) across 1,144 unedited exemplars from 126 identities (each represented by at least 5 photographs).
     </p>
     <p>
-      Crucially, the model uses each image's filter responses to <strong>draw linear decision boundaries between identities</strong>.
-      Taking the top two axes of those learned identity boundaries collapses the filter bank into a 2D space structured by what
-      actually distinguishes one person from another.
+      The key intuition here is that the model uses each image's filter responses to <strong>draw linear decision boundaries between identities</strong>. Taking the top two singular vectors of those learned identity boundaries projects all 1,440 faces onto a single 2D plane organised by identity-diagnostic structure.
     </p>
 
     <h2>4. Identity Decoding Accuracy vs. Chance Baseline</h2>
     <p>
-      Across 5-fold cross-validation, both models decode held-out celebrity identities at roughly <strong>17&times; the Top-1 chance baseline</strong>
-      (<code>0.79%</code> for 126 identities) and <strong>7&times; the Top-5 chance baseline</strong> (<code>3.97%</code>).
-      Adding the 4 extra horizontal filters yields virtually identical accuracy (<code>13.55%</code> vs. <code>13.46%</code>) while adding
-      504 parameters, showing the complete 16&times;8 bank already captures the diagnostic horizontal structure.
+      I evaluated both models using identical 5-fold cross-validation splits. Both the base model (13.46% &plusmn; 1.86%) and the horizontal-biased model (13.55% &plusmn; 2.20%) decoded held-out celebrity identities well above the 0.79% Top-1 chance baseline (~17&times; chance), and reached ~27.8% Top-5 accuracy against a 3.97% chance baseline.
+    </p>
+    <p>
+      As for my side-hypothesis on horizontal bar codes, adding the 4 extra horizontal filters produced virtually identical accuracy while adding 504 free parameters—indicating that the complete 16&times;8 bank already captures the relevant horizontal low-frequency information.
     </p>
 
     <div class="figure-card">
@@ -213,21 +188,18 @@
         <text x="205" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-1 Identity Decoding (~17&times; Chance)</text>
         <line x1="65" y1="240" x2="365" y2="240" stroke="#444b59" stroke-width="1.2"/>
         <line x1="65" y1="45"  x2="65"  y2="240" stroke="#444b59" stroke-width="1.2"/>
-        <!-- Y ticks 0, 5, 10, 15, 20 -->
         <text x="57" y="244" text-anchor="end" fill="#9aa0a6" font-size="11">0%</text>
         <text x="57" y="195" text-anchor="end" fill="#9aa0a6" font-size="11">5%</text>
         <text x="57" y="146" text-anchor="end" fill="#9aa0a6" font-size="11">10%</text>
         <text x="57" y="98"  text-anchor="end" fill="#9aa0a6" font-size="11">15%</text>
         <text x="57" y="49"  text-anchor="end" fill="#9aa0a6" font-size="11">20%</text>
-        <!-- Chance line 0.79% -> y = 240 - (0.79/20)*195 = 232.3 -->
         <line x1="65" y1="232.3" x2="365" y2="232.3" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
         <text x="362" y="226" text-anchor="end" fill="#ff9f9e" font-size="11">Chance baseline (0.79%)</text>
-        <!-- Bars: Base 13.46% (h=131.2, y=108.8), SD=1.86% (+/-18.1px) -->
+
         <rect x="115" y="108.8" width="64" height="131.2" rx="4" fill="#5a9cf8"/>
         <line x1="147" y1="90.7" x2="147" y2="126.9" stroke="#ffffff" stroke-width="1.8"/>
         <line x1="139" y1="90.7" x2="155" y2="90.7" stroke="#ffffff" stroke-width="1.8"/>
         <line x1="139" y1="126.9" x2="155" y2="126.9" stroke="#ffffff" stroke-width="1.8"/>
-        <!-- Fold dots Base: 13.00, 15.66, 14.80, 12.02, 11.23 -->
         <circle cx="141" cy="113.3" r="3" fill="#ffffff" opacity="0.85"/>
         <circle cx="144" cy="87.3"  r="3" fill="#ffffff" opacity="0.85"/>
         <circle cx="147" cy="95.7"  r="3" fill="#ffffff" opacity="0.85"/>
@@ -236,12 +208,10 @@
         <text x="147" y="81" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">13.5%</text>
         <text x="147" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (128)</text>
 
-        <!-- Biased 13.55% (h=132.1, y=107.9), SD=2.20% (+/-21.5px) -->
         <rect x="245" y="107.9" width="64" height="132.1" rx="4" fill="#8c7ae6"/>
         <line x1="277" y1="86.4" x2="277" y2="129.4" stroke="#ffffff" stroke-width="1.8"/>
         <line x1="269" y1="86.4" x2="285" y2="86.4" stroke="#ffffff" stroke-width="1.8"/>
         <line x1="269" y1="129.4" x2="285" y2="129.4" stroke="#ffffff" stroke-width="1.8"/>
-        <!-- Fold dots Biased: 13.72, 16.06, 14.80, 11.06, 11.23 -->
         <circle cx="271" cy="106.2" r="3" fill="#ffffff" opacity="0.85"/>
         <circle cx="274" cy="83.4"  r="3" fill="#ffffff" opacity="0.85"/>
         <circle cx="277" cy="95.7"  r="3" fill="#ffffff" opacity="0.85"/>
@@ -254,32 +224,29 @@
         <text x="615" y="24" text-anchor="middle" fill="#e8eaed" font-size="14" font-weight="600">Top-5 Identity Decoding (~7&times; Chance)</text>
         <line x1="475" y1="240" x2="775" y2="240" stroke="#444b59" stroke-width="1.2"/>
         <line x1="475" y1="45"  x2="475" y2="240" stroke="#444b59" stroke-width="1.2"/>
-        <!-- Y ticks 0, 10, 20, 30, 35 -->
         <text x="467" y="244" text-anchor="end" fill="#9aa0a6" font-size="11">0%</text>
         <text x="467" y="188" text-anchor="end" fill="#9aa0a6" font-size="11">10%</text>
         <text x="467" y="133" text-anchor="end" fill="#9aa0a6" font-size="11">20%</text>
         <text x="467" y="77"  text-anchor="end" fill="#9aa0a6" font-size="11">30%</text>
-        <!-- Chance line 3.97% -> y = 240 - (3.97/35)*195 = 217.9 -->
         <line x1="475" y1="217.9" x2="775" y2="217.9" stroke="#ff7675" stroke-width="1.5" stroke-dasharray="5 4"/>
         <text x="772" y="211" text-anchor="end" fill="#ff9f9e" font-size="11">Chance baseline (3.97%)</text>
-        <!-- Base Top-5: 27.88% -> h = 155.3, y = 84.7 -->
+
         <rect x="525" y="84.7" width="64" height="155.3" rx="4" fill="#5a9cf8"/>
         <text x="557" y="77" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">27.9%</text>
         <text x="557" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Base (128)</text>
-        <!-- Biased Top-5: 27.71% -> h = 154.4, y = 85.6 -->
+
         <rect x="655" y="85.6" width="64" height="154.4" rx="4" fill="#8c7ae6"/>
         <text x="687" y="78" text-anchor="middle" fill="#e8eaed" font-size="12" font-weight="600">27.7%</text>
         <text x="687" y="260" text-anchor="middle" fill="#d2d6dc" font-size="11.5">Horiz-Biased (132)</text>
       </svg>
       <div class="fig-caption">
-        5-fold cross-validated identity classification across 126 celebrities (&ge; 5 exemplars each). Error bars denote &plusmn;1 SD across folds; white dots show individual fold accuracies.
+        <strong>Figure 4.</strong> Five-fold cross-validated identity classification across 126 celebrities (&ge; 5 exemplars each). Error bars denote &plusmn;1 SD across folds; white dots show individual fold accuracies relative to the dashed chance baselines.
       </div>
     </div>
 
     <h2>5. Resulting Equal-Step Circular Face Space</h2>
     <p>
-      Projecting all 1,440 faces into the top two identity-boundary axes, fitting a circular von Mises density (<code>H = 2.64 bits</code>),
-      and sampling uniformly along the CDF selects 16 unedited faces spaced at equal information-theoretic steps starting at <code>0&deg;</code> (due east).
+      Projecting all 1,440 faces onto the top two identity-boundary axes, estimating the circular von Mises density (<code>H = 2.64 bits</code>), and sampling uniformly along its cumulative distribution yields 16 unedited faces spaced around the circle starting at <code>0&deg;</code> (due east).
     </p>
 
     <div class="ring-panel">
@@ -288,82 +255,20 @@
         <div class="ring-circle"></div>
       </div>
     </div>
+
+    <h2>6. Psychophysical Validation (2AFC Task)</h2>
+    <p>
+      An information-theoretic space is only useful for perceptual experiments if its geometry actually predicts human similarity judgements. To test this, I built a counterbalanced two-alternative forced-choice (2AFC) validation task. On each trial, observers view two pairs of faces: an anchor face paired with its immediate neighbour on the circle ("near") versus the same anchor paired with the face on the opposite side of the circle ("far"). Across passes, the roles of near and far faces are swapped using an opposite anchor so that individual face distinctiveness cannot bias the comparison.
+    </p>
+    <div class="caveat-box">
+      <p style="margin:0;">
+        <strong>Methodological caveat:</strong> Despite above-chance identity decoding, this simple model is almost certainly <em>not</em> perceptually valid as a true face space. Summing filter responses globally discards the spatial configuration of facial features (e.g. eye spacing vs. mouth shape), collapsing 126 identity boundaries onto just two linear axes loses most of the identity variance, and the unaligned, in-the-wild photographs vary substantially in head pose, gaze, and facial expression—cues that dominate human similarity judgements.
+      </p>
+    </div>
+    <a class="cta-btn" href="task.html">Launch 2AFC Validation Task &rarr;</a>
   </div>
 
   <script>
-    // 1. Render 2D Fourier Filter Bank Canvases
-    function drawFilterBanks() {
-      const cBase = document.getElementById('canvas-base').getContext('2d');
-      const cBias = document.getElementById('canvas-bias').getContext('2d');
-      const W = 320, H = 320;
-      const imgBase = cBase.createImageData(W, H);
-      const imgBias = cBias.createImageData(W, H);
-
-      const nOris = 16, nFreqs = 8;
-      const oriBW = 180 / nOris;
-      const fKnots = [];
-      for (let i = 0; i <= nFreqs; i++) {
-        fKnots.push(4 * Math.pow(64 / 4, i / nFreqs));
-      }
-
-      for (let py = 0; py < H; py++) {
-        for (let px = 0; px < W; px++) {
-          const fx = (px - W / 2) * (128 / W);
-          const fy = (H / 2 - py) * (128 / H);
-          const rad = Math.hypot(fx, fy);
-          const ang = (Math.atan2(fy, fx) * 180) / Math.PI;
-          const inHalf = (ang >= -90 && ang < 90);
-
-          let vBase = 0;
-          if (inHalf && rad >= fKnots[0] && rad <= fKnots[nFreqs]) {
-            let sfIdx = 0;
-            for (let s = 0; s < nFreqs; s++) {
-              if (rad >= fKnots[s] && rad <= fKnots[s + 1]) { sfIdx = s; break; }
-            }
-            for (let oi = 0; oi < nOris; oi++) {
-              const oriC = -90 + oi * oriBW;
-              const dAng = ((ang - oriC + 90) % 180 + 180) % 180 - 90;
-              const w = 0.5 * (1 + Math.cos(Math.PI * Math.min(Math.abs(dAng) / oriBW, 1)));
-              const checker = ((oi + sfIdx) % 2 === 0) ? 1.0 : 0.48;
-              vBase = Math.max(vBase, w * checker);
-            }
-          }
-
-          const idx = (py * W + px) * 4;
-          imgBase.data[idx]     = Math.round(18 + 230 * Math.pow(vBase, 0.85));
-          imgBase.data[idx + 1] = Math.round(20 + 145 * Math.pow(vBase, 1.3));
-          imgBase.data[idx + 2] = Math.round(28 + 180 * (vBase * (1 - 0.5 * vBase)));
-          imgBase.data[idx + 3] = 255;
-
-          // Zoomed low-SF panel (+/- 48 cyc/img)
-          const fxZ = (px - W / 2) * (96 / W);
-          const fyZ = (H / 2 - py) * (96 / H);
-          const radZ = Math.hypot(fxZ, fyZ);
-          const angZ = (Math.atan2(fyZ, fxZ) * 180) / Math.PI;
-          const inHalfZ = (angZ >= -90 && angZ < 90);
-
-          let vBias = 0;
-          if (inHalfZ && radZ >= 1.5 && radZ <= 16) {
-            for (const oriC of [-10, 10]) {
-              const dAng = ((angZ - oriC + 90) % 180 + 180) % 180 - 90;
-              const wOri = 0.5 * (1 + Math.cos(Math.PI * Math.min(Math.abs(dAng) / 10, 1)));
-              const sfTone = (radZ < 7.5) ? 1.0 : 0.68;
-              vBias = Math.max(vBias, wOri * sfTone);
-            }
-          }
-          const ringHint = (radZ >= 4 && radZ <= 44 && inHalfZ) ? 35 : 18;
-          imgBias.data[idx]     = Math.round(ringHint + 90 * vBias);
-          imgBias.data[idx + 1] = Math.round(ringHint + 190 * vBias);
-          imgBias.data[idx + 2] = Math.round(ringHint + 220 * vBias);
-          imgBias.data[idx + 3] = 255;
-        }
-      }
-      cBase.putImageData(imgBase, 0, 0);
-      cBias.putImageData(imgBias, 0, 0);
-    }
-    drawFilterBanks();
-
-    // 2. Render 16-Face Equal-Step Circular Ring
     const stage = document.getElementById('ring-stage');
     const N_STEPS = 16;
     const R_PCT = 40;
