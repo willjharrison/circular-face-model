@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Face Similarity Task</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #808080;
+      color: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 920px;
+      text-align: center;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 1.5rem;
+      margin: 0 0 12px;
+    }
+    p {
+      line-height: 1.5;
+      color: #eeeeee;
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+    .btn {
+      background: #222222;
+      color: #ffffff;
+      border: 1px solid #444444;
+      padding: 12px 28px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #333333; }
+    .progress {
+      font-size: 0.9rem;
+      color: #e0e0e0;
+      margin-bottom: 14px;
+    }
+    .prompt {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 22px;
+    }
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+    @media (max-width: 700px) {
+      .choices { grid-template-columns: 1fr; gap: 18px; }
+    }
+    .pair-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      padding: 18px 14px;
+      cursor: pointer;
+      transition: transform 0.12s, border-color 0.12s, background 0.12s;
+    }
+    .pair-card:hover {
+      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    .pair-label {
+      font-size: 0.95rem;
+      color: #e8e8e8;
+      margin-bottom: 10px;
+    }
+    .pair-images {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .pair-images img {
+      width: 46%;
+      max-width: 190px;
+      height: auto;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .hint {
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: #dcdcdc;
+    }
+    textarea {
+      width: 100%;
+      max-width: 620px;
+      height: 300px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.88rem;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #2b2b2b;
+      color: #f0f0f0;
+      margin: 14px auto;
+      display: block;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Start Screen -->
+    <div id="screen-start">
+      <h1>Face Similarity Judgment</h1>
+      <p>
+        On each trial, you will see two pairs of faces (Pair A and Pair B).
+        Choose the pair whose two faces look <strong>more similar</strong> to each other.
+      </p>
+      <p>There are 32 quick trials (about 1–2 minutes). Press <strong>Start</strong> when ready.</p>
+      <button class="btn" id="btn-start">Start Task</button>
+    </div>
+
+    <!-- Trial Screen -->
+    <div id="screen-trial" class="hidden">
+      <div class="progress" id="progress-text">Trial 1 / 32</div>
+      <div class="prompt">Which pair looks more similar?</div>
+      <div class="choices" id="choices-grid">
+        <div class="pair-card" id="card-a">
+          <div class="pair-label">Pair A (press 1 or &larr;)</div>
+          <div class="pair-images">
+            <img id="img-a1" alt="Face A1" />
+            <img id="img-a2" alt="Face A2" />
+          </div>
+        </div>
+        <div class="pair-card" id="card-b">
+          <div class="pair-label">Pair B (press 2 or &rarr;)</div>
+          <div class="pair-images">
+            <img id="img-b1" alt="Face B1" />
+            <img id="img-b2" alt="Face B2" />
+          </div>
+        </div>
+      </div>
+      <div class="hint">Click a pair or use keyboard keys 1 / 2 (or Left / Right arrows).</div>
+    </div>
+
+    <!-- Done Screen -->
+    <div id="screen-done" class="hidden">
+      <h1>All Done — Thank You!</h1>
+      <p>Please copy the two columns below and send them back:</p>
+      <textarea id="output-data" readonly></textarea>
+      <button class="btn" id="btn-copy">Copy Data</button>
+      <div class="hint" id="copy-status"></div>
+    </div>
+  </div>
+
+  <script>
+    const N_STEPS = 16;
+    const stimPath = (idx) => `stimuli/stim_${String(idx + 1).padStart(2, '0')}.png`;
+
+    // Preload all 16 stimuli
+    for (let i = 0; i < N_STEPS; i++) {
+      const img = new Image();
+      img.src = stimPath(i);
+    }
+
+    // Build 32 balanced trials:
+    // For each face k (0..15), Near pair = (k, k+1), Opposite pair = (k+4, k+12)
+    // All 4 faces on every trial are guaranteed distinct.
+    function buildTrials() {
+      const trials = [];
+      for (let k = 0; k < N_STEPS; k++) {
+        const n1 = k;
+        const n2 = (k + 1) % N_STEPS;
+        const o1 = (k + 4) % N_STEPS;
+        const o2 = (k + 4 + N_STEPS / 2) % N_STEPS;
+
+        // 2 repeats per anchor face: once with Near on Left (A), once on Right (B)
+        for (const nearSide of ['A', 'B']) {
+          const condId = `N${String(n1+1).padStart(2,'0')}_${String(n2+1).padStart(2,'0')}_vs_O${String(o1+1).padStart(2,'0')}_${String(o2+1).padStart(2,'0')}_Near${nearSide}`;
+          trials.push({
+            condId,
+            nearSide,
+            pairA: nearSide === 'A' ? [n1, n2] : [o1, o2],
+            pairB: nearSide === 'B' ? [n1, n2] : [o1, o2]
+          });
+        }
+      }
+      // Fisher-Yates shuffle
+      for (let i = trials.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [trials[i], trials[j]] = [trials[j], trials[i]];
+      }
+      return trials;
+    }
+
+    const trials = buildTrials();
+    let current = 0;
+    let locked = false;
+    const responses = [];
+
+    const screenStart = document.getElementById('screen-start');
+    const screenTrial = document.getElementById('screen-trial');
+    const screenDone  = document.getElementById('screen-done');
+    const choicesGrid = document.getElementById('choices-grid');
+    const progressEl  = document.getElementById('progress-text');
+
+    function showTrial() {
+      if (current >= trials.length) {
+        finishTask();
+        return;
+      }
+      const tr = trials[current];
+      progressEl.textContent = `Trial ${current + 1} / ${trials.length}`;
+      document.getElementById('img-a1').src = stimPath(tr.pairA[0]);
+      document.getElementById('img-a2').src = stimPath(tr.pairA[1]);
+      document.getElementById('img-b1').src = stimPath(tr.pairB[0]);
+      document.getElementById('img-b2').src = stimPath(tr.pairB[1]);
+      choicesGrid.style.visibility = 'visible';
+      locked = false;
+    }
+
+    function recordChoice(side) {
+      if (locked || current >= trials.length) return;
+      locked = true;
+      const tr = trials[current];
+      const judged = (side === tr.nearSide) ? 'most_similar' : 'least_similar';
+      responses.push(`${tr.condId}\t${judged}`);
+      choicesGrid.style.visibility = 'hidden';
+      current++;
+      setTimeout(showTrial, 220);
+    }
+
+    function finishTask() {
+      screenTrial.classList.add('hidden');
+      screenDone.classList.remove('hidden');
+      document.getElementById('output-data').value =
+        'ConditionID\tResponse\n' + responses.join('\n');
+    }
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+      screenStart.classList.add('hidden');
+      screenTrial.classList.remove('hidden');
+      showTrial();
+    });
+
+    document.getElementById('card-a').addEventListener('click', () => recordChoice('A'));
+    document.getElementById('card-b').addEventListener('click', () => recordChoice('B'));
+
+    document.addEventListener('keydown', (e) => {
+      if (screenTrial.classList.contains('hidden')) return;
+      if (e.key === '1' || e.key === 'ArrowLeft')  recordChoice('A');
+      if (e.key === '2' || e.key === 'ArrowRight') recordChoice('B');
+    });
+
+    document.getElementById('btn-copy').addEventListener('click', async () => {
+      const ta = document.getElementById('output-data');
+      ta.select();
+      try {
+        await navigator.clipboard.writeText(ta.value);
+        document.getElementById('copy-status').textContent = 'Copied to clipboard!';
+      } catch {
+        document.execCommand('copy');
+        document.getElementById('copy-status').textContent = 'Selected — press Cmd+C / Ctrl+C to copy.';
+      }
+    });
+  </script>
+</body>
+</html>
