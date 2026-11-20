@@ -168,7 +168,8 @@
 
   <script>
     const N_STEPS = 16;
-    const stimPath = (idx) => `stimuli/stim_${String(idx + 1).padStart(2, '0')}.png`;
+    const cacheTag = Date.now();
+    const stimPath = (idx) => `stimuli/stim_${String(idx + 1).padStart(2, '0')}.png?v=${cacheTag}`;
 
     // Preload all 16 stimuli
     for (let i = 0; i < N_STEPS; i++) {
